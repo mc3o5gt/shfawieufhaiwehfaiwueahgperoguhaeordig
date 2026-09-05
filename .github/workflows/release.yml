@@ -1,0 +1,59 @@
+name: Build Fedora 42 Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: quay.io/fedora/fedora:42
+      options: --security-opt seccomp=unconfined
+
+    steps:
+      - name: Install build dependencies
+        run: |
+          dnf install -y gcc-c++ git fpc fpc-utils lazarus-lcl-gtk3
+
+      - name: Checkout zpaqfranz
+        uses: actions/checkout@v4
+        with:
+          repository: fcorbelli/zpaqfranz
+          path: zpaqfranz
+          ref: main
+
+      - name: Build zpaqfranz
+        run: |
+          cd zpaqfranz
+          g++ -Dunix -O3 -march=native zpaqfranz.cpp -o zpaqfranz -pthread -s
+
+      - name: Checkout catpaq
+        uses: actions/checkout@v4
+        with:
+          repository: fcorbelli/catpaq
+          path: catpaq
+          ref: main
+
+      - name: Build catpaq
+        run: |
+          cd catpaq
+          lazbuild catpaq.lpi
+
+      - name: Prepare bundle
+        run: |
+          mkdir -p dist
+          cp zpaqfranz/zpaqfranz dist/
+          cp catpaq/catpaq dist/
+          cd dist
+          sha256sum zpaqfranz catpaq > SHA256SUMS.txt
+          tar czf zpaqfranz-catpaq-fedora42-x86_64.tar.gz \
+                  zpaqfranz catpaq SHA256SUMS.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zpaqfranz-catpaq-fedora42-x86_64
+          path: dist/zpaqfranz-catpaq-fedora42-x86_64.tar.gz
+          retention-days: 90   
