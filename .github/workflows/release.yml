@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Install build dependencies
         run: |
-          dnf install -y gcc-c++ git fpc lazarus-tools lazarus-lcl-gtk2 lazarus-lcl-gtk3
+          dnf install -y gcc-c++ git fpc lazarus-tools lazarus-lcl-gtk3
 
       - name: Checkout zpaqfranz
         uses: actions/checkout@v4
@@ -36,10 +36,15 @@ jobs:
           path: catpaq
           ref: main
 
+      - name: Patch source
+        run: |
+          cd catpaq/source
+          sed -i '/^[[:space:]]*uses[[:space:]]*$/a\  Math,' ufrmmain.pas
+
       - name: Build catpaq
         run: |
           cd catpaq
-          lazbuild source/catpaq.lpi
+          lazbuild --ws=gtk3 source/catpaq.lpi
 
       - name: Prepare bundle
         run: |
