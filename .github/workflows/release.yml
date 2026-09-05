@@ -27,7 +27,7 @@ jobs:
       - name: Build zpaqfranz
         run: |
           cd zpaqfranz
-          g++ -Dunix -O3 -march=native zpaqfranz.cpp -o zpaqfranz -pthread -s
+          g++ -Dunix -O3 -march=x86-64 zpaqfranz.cpp -o zpaqfranz -pthread -s
 
       - name: Checkout catpaq
         uses: actions/checkout@v4
