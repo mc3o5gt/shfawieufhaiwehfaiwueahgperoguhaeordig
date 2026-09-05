@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Install build dependencies
         run: |
-          dnf install -y gcc-c++ git fpc lazarus-tools lazarus-lcl-gtk3
+          dnf install -y gcc-c++ git fpc lazarus
 
       - name: Checkout zpaqfranz
         uses: actions/checkout@v4
@@ -35,10 +35,6 @@ jobs:
           repository: fcorbelli/catpaq
           path: catpaq
           ref: main
-
-      - name: Find lpi file
-        run: |
-          find catpaq -name "*.lpi" -o -name "*.lpr"
 
       - name: Patch source
         run: |
