@@ -1,4 +1,4 @@
-name: Build Fedora 42
+name: Build Fedora 42 Release
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-and-release:
     runs-on: ubuntu-latest
     container:
       image: quay.io/fedora/fedora:42
@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Install build dependencies
         run: |
-          dnf install -y gcc-c++ git fpc lazarus
+          dnf install -y gcc-c++ git fpc fpc-utils lazarus gtk3-devel
 
       - name: Checkout zpaqfranz
         uses: actions/checkout@v4
@@ -28,6 +28,7 @@ jobs:
         run: |
           cd zpaqfranz
           g++ -Dunix -O3 -march=native zpaqfranz.cpp -o zpaqfranz -pthread -s
+          ./zpaqfranz -v
 
       - name: Checkout catpaq
         uses: actions/checkout@v4
@@ -36,29 +37,27 @@ jobs:
           path: catpaq
           ref: main
 
-      - name: Patch source
-        run: |
-          cd catpaq/source
-          sed -i '/^[[:space:]]*uses[[:space:]]*$/a\  Math,' ufrmmain.pas
-
       - name: Build catpaq
         run: |
           cd catpaq
-          lazbuild --ws=gtk3 source/catpaq.lpi
+          lazbuild catpaq.lpi
 
-      - name: Prepare bundle
+      - name: Prepare release bundle
         run: |
           mkdir -p dist
           cp zpaqfranz/zpaqfranz dist/
-          cp catpaq/source/catpaq dist/
+          cp catpaq/catpaq dist/
           cd dist
           sha256sum zpaqfranz catpaq > SHA256SUMS.txt
           tar czf zpaqfranz-catpaq-fedora42-x86_64.tar.gz \
                   zpaqfranz catpaq SHA256SUMS.txt
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: zpaqfranz-catpaq-fedora42-x86_64
-          path: dist/zpaqfranz-catpaq-fedora42-x86_64.tar.gz
-          retention-days: 90
+          files: dist/zpaqfranz-catpaq-fedora42-x86_64.tar.gz
+          name: Fedora 42 x86_64
+          draft: false
+          prerelease: false
