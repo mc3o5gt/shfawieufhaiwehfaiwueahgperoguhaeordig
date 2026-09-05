@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Install build dependencies
         run: |
-          dnf install -y gcc-c++ git fpc fpc-utils lazarus-lcl-gtk3
+          dnf install -y gcc-c++ git fpc fpc-src lazarus-lcl-gtk3
 
       - name: Checkout zpaqfranz
         uses: actions/checkout@v4
