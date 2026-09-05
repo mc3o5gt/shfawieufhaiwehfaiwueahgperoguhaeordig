@@ -1,4 +1,4 @@
-name: Build Fedora 42 Release
+name: Build Fedora 42
 
 on:
   push:
@@ -39,13 +39,13 @@ jobs:
       - name: Build catpaq
         run: |
           cd catpaq
-          lazbuild catpaq.lpi
+          lazbuild source/catpaq.lpi
 
       - name: Prepare bundle
         run: |
           mkdir -p dist
           cp zpaqfranz/zpaqfranz dist/
-          cp catpaq/catpaq dist/
+          cp catpaq/source/catpaq dist/
           cd dist
           sha256sum zpaqfranz catpaq > SHA256SUMS.txt
           tar czf zpaqfranz-catpaq-fedora42-x86_64.tar.gz \
@@ -56,4 +56,4 @@ jobs:
         with:
           name: zpaqfranz-catpaq-fedora42-x86_64
           path: dist/zpaqfranz-catpaq-fedora42-x86_64.tar.gz
-          retention-days: 90   
+          retention-days: 90
